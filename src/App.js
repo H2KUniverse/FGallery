@@ -1,38 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, signInAnonymously, auth, listAll } from "./firebase";
-
 import heic2any from "heic2any";
 
 function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true); // New loading state for authentication
   const [user, setUser] = useState(null);
-  const [nextPageToken] = useState(null); // Firebase pagination token
-  const galleryRef = useRef(null); // Ref for detecting scroll events
-
-  const fetchImages = useCallback(async () => {
-    if (loading) return;
-    setLoading(true);
-  
-    const listRef = ref(storage, "images/");
-  
-    try {
-      const result = await listAll(listRef);
-      const imageUrls = await Promise.all(
-        result.items.map(async (itemRef) => {
-          const url = await getDownloadURL(itemRef);
-          return url;
-        })
-      );
-  
-      setImages((prevImages) => [...prevImages, ...imageUrls]);
-    } catch (error) {
-      console.error("Error fetching images:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading]);
 
   // Authentication logic
   useEffect(() => {
@@ -45,41 +19,26 @@ function App() {
         console.error("Error signing in:", error.message);
       })
       .finally(() => {
-        setAuthLoading(false);
+        setAuthLoading(false); // Set authentication loading to false after auth completes
       });
   }, []);
 
-  // Fetch initial images
+  // Fetch images from Firebase Storage
   useEffect(() => {
     if (authLoading || !user) return;
 
-    fetchImages(); // Fetch the first 10 images
-  }, [authLoading, user, fetchImages]);
-  
-
-  // Infinite scrolling logic
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!galleryRef.current) return;
-      const { scrollTop, scrollHeight, clientHeight } = galleryRef.current;
-
-      // If close to the bottom of the gallery, fetch more images
-      if (scrollTop + clientHeight >= scrollHeight - 300 && nextPageToken) {
-        fetchImages();
-      }
+    const fetchImages = async () => {
+      const listRef = ref(storage, 'images/');
+      const result = await listAll(listRef);  // List all images in the 'images/' folder
+      const imageUrls = await Promise.all(result.items.map(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);  // Fetch download URL for each image
+        return url;
+      }));
+      setImages(imageUrls);
     };
 
-    const gallery = galleryRef.current;
-    if (gallery) {
-      gallery.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      if (gallery) {
-        gallery.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [nextPageToken, fetchImages]);
+    fetchImages();
+  }, [authLoading, user]);
 
   const handleFileUpload = async (event) => {
     if (authLoading) {
@@ -124,23 +83,16 @@ function App() {
 
     setImages((prevImages) => [...prevImages, ...convertedImages]);
 
-    setLoading(false);
+    // Show loading spinner for 5 seconds before refreshing
+    setTimeout(() => {
+      setLoading(false);  // Stop loading spinner
+      window.location.reload();  // Refresh the page
+    }, 5000);
   };
 
   return (
     <div className="App">
       <header>
-        <div className="sticky-menu">
-          <div className="menu-item left">
-            <span className="icon-placeholder">🏠</span> {/* Left button */}
-          </div>
-          <div className="menu-item large center">
-            <span className="icon-placeholder">+</span> {/* Center add button */}
-          </div>
-          <div className="menu-item right">
-            <span className="icon-placeholder">⚙️</span> {/* Right button */}
-          </div>
-        </div>
         <h1>Freja's Univers</h1>
         <input
           type="file"
@@ -150,18 +102,21 @@ function App() {
           style={{ marginTop: "1rem" }}
         />
       </header>
-      <main ref={galleryRef} style={{ height: "80vh", overflowY: "auto" }}>
+      <main>
         <div className="gallery">
-          {images.map((image, index) => (
-            <img key={index} src={image} alt={`Uploaded ${index}`} />
-          ))}
-          {loading && <div className="spinner"></div>}
-          {!nextPageToken && !loading && <p>No more images to load.</p>}
+          {loading ? (
+            <div className="spinner"></div> // Show spinner when uploading
+          ) : images.length > 0 ? (
+            images.map((image, index) => (
+              <img key={index} src={image} alt={`Uploaded ${index}`} />
+            ))
+          ) : (
+            <p>No images uploaded yet!</p>
+          )}
         </div>
       </main>
     </div>
   );
 }
-
 
 export default App;
