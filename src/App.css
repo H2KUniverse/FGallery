@@ -82,3 +82,61 @@
     transform: rotate(360deg);
   }
 }
+
+/* Sticky menu styles */
+.sticky-menu {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between; /* Align buttons on the sides and center */
+  align-items: center;
+  background-color: #ffffff; /* Background color */
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Common menu item styles */
+.menu-item {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+/* Left button */
+.menu-item.left {
+  margin-left: 10px; /* Optional spacing */
+}
+
+/* Right button */
+.menu-item.right {
+  margin-right: 10px; /* Optional spacing */
+}
+
+/* Center button (larger) */
+.menu-item.large {
+  width: 70px; /* Larger button */
+  height: 70px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.menu-item:hover {
+  transform: scale(1.1); /* Slight zoom effect */
+  background-color: #e0e0e0;
+}
+
+.icon-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -130,6 +130,17 @@ function App() {
   return (
     <div className="App">
       <header>
+        <div className="sticky-menu">
+          <div className="menu-item left">
+            <span className="icon-placeholder">🏠</span> {/* Left button */}
+          </div>
+          <div className="menu-item large center">
+            <span className="icon-placeholder">+</span> {/* Center add button */}
+          </div>
+          <div className="menu-item right">
+            <span className="icon-placeholder">⚙️</span> {/* Right button */}
+          </div>
+        </div>
         <h1>Freja's Univers</h1>
         <input
           type="file"
@@ -151,5 +162,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;
