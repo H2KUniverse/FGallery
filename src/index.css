@@ -155,3 +155,44 @@ input[type="file"]::-webkit-file-upload-button:hover {
   color: inherit;
 }
 
+.btn-container {
+  left: -16%!important;
+  position: fixed;
+  top: 50%;
+  left: 20px; /* Adjust as needed for spacing from the left */
+  transform: translateY(-50%); /* Center it vertically */
+  z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+.btn {
+  display: inline-block;
+  padding: 15px 30px;
+  font-size: 56px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #ff6f61;
+  border-radius: 50%;
+  border: 2px solid #ff6f61;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.btn:hover {
+  background-color: #ff4a34;
+  border-color: #ff4a34;
+  transform: scale(1.1);
+}
+
+.btn:active {
+  background-color: #e23d2f;
+  border-color: #e23d2f;
+  transform: scale(1);
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 111, 97, 0.5);
+}

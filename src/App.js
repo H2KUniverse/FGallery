@@ -93,21 +93,21 @@ function App() {
   return (
     <div className="App">
       <header>
-
         <h1>Freja's Univers</h1>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileUpload}
-          style={{ marginTop: "1rem" }}
-        />
+        <div className="btn-container">
+  <label for="files" class="btn">🖼️</label>
+  <input
+    id="files"
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleFileUpload}
+    style={{ display: "none" }}
+  />
+</div>
+
       </header>
       <main>
-      <div className="rocket-container">
-  <div className="rocket left"></div>
-  <div className="rocket right"></div>
-</div>
         <div className="gallery">
           {loading ? (
             <div className="spinner"></div> // Show spinner when uploading
