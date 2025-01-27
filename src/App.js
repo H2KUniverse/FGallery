@@ -93,6 +93,7 @@ function App() {
   return (
     <div className="App">
       <header>
+
         <h1>Freja's Univers</h1>
         <input
           type="file"
@@ -103,6 +104,10 @@ function App() {
         />
       </header>
       <main>
+      <div className="rocket-container">
+  <div className="rocket left"></div>
+  <div className="rocket right"></div>
+</div>
         <div className="gallery">
           {loading ? (
             <div className="spinner"></div> // Show spinner when uploading
