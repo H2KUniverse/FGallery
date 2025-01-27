@@ -1,17 +1,17 @@
 import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";  // Import listAll
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { getAuth, signInAnonymously } from "firebase/auth";
 
-// Firebase configuration
+// Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyDTyYkLqPkRKbuOh2pRD7KH0Z4qpYt2K_c",
-  authDomain: "freja-galleri-billeder.firebaseapp.com",
-  projectId: "freja-galleri-billeder",
-  storageBucket: "freja-galleri-billeder.firebasestorage.app",
-  messagingSenderId: "87751049511",
-  appId: "1:87751049511:web:45ab6402da2a1c2aa62902",
-  measurementId: "G-880FGFDZWF"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -23,4 +23,4 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
-export { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, auth, signInAnonymously, listAll }; // Export listAll
+export { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, auth, signInAnonymously, listAll };

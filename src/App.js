@@ -82,13 +82,18 @@ function App() {
     );
 
     setImages((prevImages) => [...prevImages, ...convertedImages]);
-    setLoading(false);
+
+    // Show loading spinner for 5 seconds before refreshing
+    setTimeout(() => {
+      setLoading(false);  // Stop loading spinner
+      window.location.reload();  // Refresh the page
+    }, 5000);
   };
 
   return (
     <div className="App">
       <header>
-        <h1>Freja's Image Gallery</h1>
+        <h1>Freja's Univers</h1>
         <input
           type="file"
           accept="image/*"
@@ -100,7 +105,7 @@ function App() {
       <main>
         <div className="gallery">
           {loading ? (
-            <p>Uploading images...</p>
+            <div className="spinner"></div> // Show spinner when uploading
           ) : images.length > 0 ? (
             images.map((image, index) => (
               <img key={index} src={image} alt={`Uploaded ${index}`} />
