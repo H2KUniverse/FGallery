@@ -9,8 +9,7 @@ function App() {
 
   // Authentication logic
   useEffect(() => {
-    const getOut = auth();
-    signInAnonymously(getOut) // Sign in anonymously
+    signInAnonymously(auth) // Sign in anonymously
       .then((userCredential) => {
         setUser(userCredential.user);
         console.log("Signed in as", userCredential.user.uid);
