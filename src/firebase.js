@@ -1,8 +1,7 @@
-// firebase.js
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
-// import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInAnonymously } from "firebase/auth"; // Add this line for authentication
 
 // Firebase configuration
 const firebaseConfig = {
@@ -17,8 +16,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
+
+// Initialize Firebase Authentication
+const auth = getAuth(app); // Add this to initialize Firebase Auth
+
 const storage = getStorage(app);
 const db = getFirestore(app);
 
-export { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc };
+export { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, auth, signInAnonymously }; // Export auth and signInAnonymously

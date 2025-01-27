@@ -1,12 +1,31 @@
-import { useState } from "react";
-import { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc } from "./firebase";
+import { useState, useEffect } from "react";
+import { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, signInAnonymously, auth } from "./firebase";
 import heic2any from "heic2any";
 
 function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Authentication logic
+  useEffect(() => {
+    const getOut = auth();
+    signInAnonymously(getOut) // Sign in anonymously
+      .then((userCredential) => {
+        setUser(userCredential.user);
+        console.log("Signed in as", userCredential.user.uid);
+      })
+      .catch((error) => {
+        console.error("Error signing in:", error.message);
+      });
+  }, []);
 
   const handleFileUpload = async (event) => {
+    if (!user) {
+      console.log("User is not authenticated.");
+      return;
+    }
+
     const files = Array.from(event.target.files);
     setLoading(true);
 
@@ -26,7 +45,7 @@ function App() {
           imageUrl = await getDownloadURL(fileRef);
         }
 
-        // Optionally, save the image URL to Firestore (optional)
+        // Optionally, save the image URL to Firestore
         await addDoc(collection(db, "images"), {
           url: imageUrl,
           name: file.name,
