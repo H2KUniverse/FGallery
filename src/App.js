@@ -1,25 +1,51 @@
 import { useState, useEffect } from "react";
-import { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, signInAnonymously, auth } from "./firebase";
+import { storage, db, uploadBytes, ref, getDownloadURL, collection, addDoc, signInAnonymously, auth, listAll } from "./firebase";
 import heic2any from "heic2any";
 
 function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); // New loading state for authentication
   const [user, setUser] = useState(null);
 
   // Authentication logic
   useEffect(() => {
-    signInAnonymously(auth) // Sign in anonymously
+    signInAnonymously(auth)
       .then((userCredential) => {
         setUser(userCredential.user);
         console.log("Signed in as", userCredential.user.uid);
       })
       .catch((error) => {
         console.error("Error signing in:", error.message);
+      })
+      .finally(() => {
+        setAuthLoading(false); // Set authentication loading to false after auth completes
       });
   }, []);
 
+  // Fetch images from Firebase Storage
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    const fetchImages = async () => {
+      const listRef = ref(storage, 'images/');
+      const result = await listAll(listRef);  // List all images in the 'images/' folder
+      const imageUrls = await Promise.all(result.items.map(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);  // Fetch download URL for each image
+        return url;
+      }));
+      setImages(imageUrls);
+    };
+
+    fetchImages();
+  }, [authLoading, user]);
+
   const handleFileUpload = async (event) => {
+    if (authLoading) {
+      console.log("Authentication is still in progress...");
+      return;
+    }
+
     if (!user) {
       console.log("User is not authenticated.");
       return;
