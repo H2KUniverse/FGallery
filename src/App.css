@@ -2,6 +2,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
+  flex-direction: column;
 }
 
 header {
@@ -10,18 +11,18 @@ header {
 }
 
 .sticky-menu {
-  position: sticky; /* Change from 'fixed' to 'sticky' */
+  position: sticky; 
   top: 0;
   left: 0;
   width: 200px;
-  height: 100vh; /* Make it fill the screen vertically */
+  height: 100vh;
   background-color: #282c34;
   padding: 20px;
   color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Align items at the top */
+  justify-content: flex-start; 
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -43,39 +44,62 @@ header {
 }
 
 main {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  margin-left: 220px; /* Make space for the sticky menu */
+  display: block; 
+  padding: 10px; 
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .gallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px; 
+  width: 100%;
+  margin: 0 auto;
+  justify-items: center; 
 }
 
 .gallery img {
-  width: 200px;
+  width: 100%;
   height: auto;
+  max-width: 180px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .spinner {
+  display: block;
   margin: 20px auto;
-  border: 5px solid #ccc;
-  border-top: 5px solid #3498db;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Make sure it covers everything */
+}
+
+@media (min-width: 768px) {
+  .gallery {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -107,4 +131,3 @@ main {
   background-color: #04AA6D;
   color: white;
 }
-

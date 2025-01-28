@@ -1,5 +1,6 @@
 body {
   font-family: 'Comic Sans MS', cursive, sans-serif; /* Playful font for a kids' vibe */
+  flex-direction: column; 
   margin: 0;
   padding: 0;
   box-sizing: border-box;
