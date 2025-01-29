@@ -38,13 +38,13 @@ function App() {
   // Fetch images from Firebase Storage
   useEffect(() => {
     if (authLoading || !user) return;
-  
+
     const fetchImages = async () => {
       const listRef = ref(storage, "images/");
       const result = await listAll(listRef); // List all images in the 'images/' folder
-  
+
       const datePattern = /^\d{8}_/; // Regex to match filenames starting with YYYYMMDD_
-  
+
       const imageUrls = await Promise.all(
         result.items
           .filter((itemRef) => datePattern.test(itemRef.name)) // Filter images with valid dates in the name
@@ -53,20 +53,19 @@ function App() {
             return { url, name: itemRef.name }; // Return both URL and name
           })
       );
-  
+
       // Sort images by date in descending order (newest first)
       const sortedImages = imageUrls.sort((a, b) => {
         const dateA = a.name.match(datePattern)[0]; // Extract the date part (YYYYMMDD)
         const dateB = b.name.match(datePattern)[0];
         return dateB.localeCompare(dateA); // Compare dates in descending order
       });
-  
+
       setImages(sortedImages); // Set images with both URL and name
     };
-  
+
     fetchImages();
   }, [authLoading, user]);
-  
 
   const handleFileUpload = async (event) => {
     if (authLoading) {
@@ -158,7 +157,6 @@ function App() {
         setLoading(false);
         window.location.reload(); // Refresh the page
       }, 5000);
-
     } catch (error) {
       console.error("Error during file upload:", error);
       setLoading(false);
@@ -182,37 +180,34 @@ function App() {
           />
         </div>
       </header>
-      <main>
-      <div className="gallery">
-  {loading ? (
-    <div className="spinner"></div>
-  ) : images.length > 0 ? (
-    images.map((image, index) => (
-      <img key={index} src={image.url} alt={`Uploaded ${index}`} />
-    ))
-  ) : (
-    <p>No images uploaded yet!</p>
-  )}
-</div>
 
+      <main>
+        <div className="gallery">
+          {loading ? (
+            <div className="spinner"></div>
+          ) : images.length > 0 ? (
+            images.map((image, index) => (
+              <img key={index} src={image.url} alt={`Uploaded ${index}`} />
+            ))
+          ) : (
+            <p>No images uploaded yet!</p>
+          )}
+        </div>
       </main>
 
-      <div className="timeline-container">
-  <div className="timeline-dates">
-    {images.length > 0 &&
-      images.map((image, index) => {
-        const date = image.name.split("_")[0]; // Extract the date (YYYYMMDD) from the filename
-
-        return (
-          <div key={index} className="timeline-date">
-          </div>
-        );
-      })}
-  </div>
-</div>
-
-
-
+      <div className="timeline-container" style={{ overflowX: "scroll", whiteSpace: "nowrap" }}>
+        <div className="timeline-dates">
+          {images.length > 0 && images.slice(0, 7).map((image, index) => (
+            <div key={index} className="timeline-date" style={{ display: "inline-block", marginRight: "10px" }}>
+              <img
+                src={image.url}
+                alt={`Thumbnail ${index}`}
+                style={{ width: "100px", height: "auto", borderRadius: "5px" }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
