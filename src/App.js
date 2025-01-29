@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   storage,
   db,
@@ -20,7 +20,8 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const galleryRef = useRef(null);
+
+  const galleryRef = useRef(null);  // To keep reference of gallery container
 
   // Authentication logic
   useEffect(() => {
@@ -138,8 +139,9 @@ function App() {
 
       setTimeout(() => {
         setLoading(false);
-        window.location.reload(); // Reload page to update the gallery
+        window.location.reload(); 
       }, 5000);
+
     } catch (error) {
       console.error("Error during file upload:", error);
       setLoading(false);
@@ -150,15 +152,16 @@ function App() {
     setSelectedImageIndex(index);
   };
 
-  // Handle swipe (up/down) on the gallery container
+  // Handle swipe (up/down) on the gallery
   const handleSwipe = (event) => {
     const container = galleryRef.current;
 
+    // Detect swipe direction and update selectedImageIndex
     if (event.deltaY > 0) {
-      // Scrolling down, go to next image
+      // Scrolling down
       setSelectedImageIndex((prev) => Math.min(prev + 1, images.length - 1)); 
     } else {
-      // Scrolling up, go to previous image
+      // Scrolling up
       setSelectedImageIndex((prev) => Math.max(prev - 1, 0)); 
     }
   };
@@ -198,7 +201,7 @@ function App() {
           ref={galleryRef}
           style={{
             overflowY: "auto", // Ensures vertical scrolling
-            height: "80vh", // Take up most of the screen height
+            height: "90vh", // Takes up most of the screen height
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
