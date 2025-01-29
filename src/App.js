@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   storage,
   db,
@@ -12,13 +12,15 @@ import {
   listAll,
 } from "./firebase";
 import heic2any from "heic2any";
-import EXIF from "exif-js"; // Import the exif-js library
+import EXIF from "exif-js";
 
 function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true); // New loading state for authentication
+  const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const galleryRef = useRef(null);
 
   // Authentication logic
   useEffect(() => {
@@ -31,7 +33,7 @@ function App() {
         console.error("Error signing in:", error.message);
       })
       .finally(() => {
-        setAuthLoading(false); // Set authentication loading to false after auth completes
+        setAuthLoading(false);
       });
   }, []);
 
@@ -41,48 +43,37 @@ function App() {
 
     const fetchImages = async () => {
       const listRef = ref(storage, "images/");
-      const result = await listAll(listRef); // List all images in the 'images/' folder
-
-      const datePattern = /^\d{8}_/; // Regex to match filenames starting with YYYYMMDD_
+      const result = await listAll(listRef);
+      const datePattern = /^\d{8}_/;
 
       const imageUrls = await Promise.all(
         result.items
-          .filter((itemRef) => datePattern.test(itemRef.name)) // Filter images with valid dates in the name
+          .filter((itemRef) => datePattern.test(itemRef.name))
           .map(async (itemRef) => {
-            const url = await getDownloadURL(itemRef); // Fetch download URL for each image
-            return { url, name: itemRef.name }; // Return both URL and name
+            const url = await getDownloadURL(itemRef);
+            return { url, name: itemRef.name };
           })
       );
 
-      // Sort images by date in descending order (newest first)
+      // Sort by date, newest first
       const sortedImages = imageUrls.sort((a, b) => {
-        const dateA = a.name.match(datePattern)[0]; // Extract the date part (YYYYMMDD)
+        const dateA = a.name.match(datePattern)[0];
         const dateB = b.name.match(datePattern)[0];
-        return dateB.localeCompare(dateA); // Compare dates in descending order
+        return dateB.localeCompare(dateA); // Newest first
       });
 
-      setImages(sortedImages); // Set images with both URL and name
+      setImages(sortedImages);
     };
 
     fetchImages();
   }, [authLoading, user]);
 
+  // Handle file upload
   const handleFileUpload = async (event) => {
-    if (authLoading) {
-      console.log("Authentication is still in progress...");
-      return;
-    }
-
-    if (!user) {
-      console.log("User is not authenticated.");
-      return;
-    }
-
     const files = Array.from(event.target.files);
     setLoading(true);
 
     try {
-      // Process files and upload them to Firebase Storage
       await Promise.all(
         files.map(async (file) => {
           let fileName = file.name;
@@ -90,7 +81,7 @@ function App() {
           // Extract date from EXIF or file metadata
           const dateTaken = await new Promise((resolve) => {
             if (file.type === "image/png") {
-              resolve(null); // PNG files don't have EXIF data
+              resolve(null);
             } else {
               const reader = new FileReader();
               reader.onload = function () {
@@ -103,65 +94,86 @@ function App() {
             }
           });
 
-          // Use EXIF date, file's last modified date, or today's date
           let formattedDate;
           if (dateTaken) {
-            formattedDate = dateTaken.replace(/:/g, "").split(" ")[0]; // Convert "YYYY:MM:DD HH:MM:SS" to "YYYYMMDD"
+            formattedDate = dateTaken.replace(/:/g, "").split(" ")[0];
           } else if (file.lastModified) {
             const modifiedDate = new Date(file.lastModified);
             formattedDate = modifiedDate
               .toISOString()
               .split("T")[0]
-              .replace(/-/g, ""); // Format as "YYYYMMDD"
+              .replace(/-/g, "");
           } else {
             const today = new Date();
             formattedDate = today
               .toISOString()
               .split("T")[0]
-              .replace(/-/g, ""); // Format today's date as "YYYYMMDD"
+              .replace(/-/g, "");
           }
 
-          // Prepend date to file name
-          const extension = fileName.substring(fileName.lastIndexOf("."));
-          fileName = `${formattedDate}_${fileName.replace(extension, "")}${extension}`;
+          fileName = `${formattedDate}_${fileName}`;
 
           let uploadedFileUrl = "";
 
-          // Handle HEIC files using heic2any
           if (file.type === "image/heic") {
             const blob = await heic2any({ blob: file, toType: "image/jpeg" });
             const fileRef = ref(storage, `images/${fileName}`);
             await uploadBytes(fileRef, blob);
             uploadedFileUrl = await getDownloadURL(fileRef);
           } else {
-            // Handle non-HEIC files
             const fileRef = ref(storage, `images/${fileName}`);
             await uploadBytes(fileRef, file);
             uploadedFileUrl = await getDownloadURL(fileRef);
           }
 
-          // Optionally, save the image URL to Firestore
           await addDoc(collection(db, "images"), {
             url: uploadedFileUrl,
             name: fileName,
             timestamp: new Date(),
           });
 
-          // Return image URL for display purposes
           return uploadedFileUrl;
         })
       );
 
-      // After all files are uploaded and URLs are fetched, show overlay for 5 seconds, then refresh the page
       setTimeout(() => {
         setLoading(false);
-        window.location.reload(); // Refresh the page
+        window.location.reload(); // Reload page to update the gallery
       }, 5000);
     } catch (error) {
       console.error("Error during file upload:", error);
       setLoading(false);
     }
   };
+
+  const handleThumbnailClick = (index) => {
+    setSelectedImageIndex(index);
+  };
+
+  // Handle swipe (up/down) on the gallery container
+  const handleSwipe = (event) => {
+    const container = galleryRef.current;
+
+    if (event.deltaY > 0) {
+      // Scrolling down, go to next image
+      setSelectedImageIndex((prev) => Math.min(prev + 1, images.length - 1)); 
+    } else {
+      // Scrolling up, go to previous image
+      setSelectedImageIndex((prev) => Math.max(prev - 1, 0)); 
+    }
+  };
+
+  useEffect(() => {
+    if (galleryRef.current) {
+      galleryRef.current.addEventListener("wheel", handleSwipe, { passive: true });
+    }
+
+    return () => {
+      if (galleryRef.current) {
+        galleryRef.current.removeEventListener("wheel", handleSwipe);
+      }
+    };
+  }, [images.length]);
 
   return (
     <div className="App">
@@ -180,31 +192,78 @@ function App() {
           />
         </div>
       </header>
-
       <main>
-        <div className="gallery">
+        <div
+          className="gallery"
+          ref={galleryRef}
+          style={{
+            overflowY: "auto", // Ensures vertical scrolling
+            height: "80vh", // Take up most of the screen height
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           {loading ? (
             <div className="spinner"></div>
           ) : images.length > 0 ? (
-            images.map((image, index) => (
-              <img key={index} src={image.url} alt={`Uploaded ${index}`} />
-            ))
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              {images.map((image, index) => (
+                <div
+                  key={index}
+                  style={{
+                    marginBottom: "10px",
+                    cursor: "pointer",
+                    border: selectedImageIndex === index ? "2px solid #00f" : "none",
+                  }}
+                  onClick={() => handleThumbnailClick(index)}
+                >
+                  <img
+                    src={image.url}
+                    alt={`Uploaded ${index}`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: "500px", // Limit the max height for images
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
             <p>No images uploaded yet!</p>
           )}
         </div>
       </main>
 
-      <div className="timeline-container" style={{ overflowX: "scroll", whiteSpace: "nowrap" }}>
-        <div className="timeline-dates">
-          {images.length > 0 && images.slice(0, 7).map((image, index) => (
-            <div key={index} className="timeline-date" style={{ display: "inline-block", marginRight: "10px" }}>
-              <img
-                src={image.url}
-                alt={`Thumbnail ${index}`}
-                style={{ width: "100px", height: "auto", borderRadius: "5px" }}
-              />
-            </div>
+      <div className="timeline-container">
+        <div
+          className="timeline-thumbnails"
+          style={{
+            display: "flex",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            padding: "10px",
+          }}
+        >
+          {images.map((image, index) => (
+            <img
+              key={index}
+              src={image.url}
+              alt={`Thumbnail ${index}`}
+              className={`timeline-thumbnail ${selectedImageIndex === index ? "selected" : ""}`}
+              data-index={index}
+              onClick={() => handleThumbnailClick(index)}
+              style={{
+                cursor: "pointer",
+                width: "60px",
+                height: "60px",
+                margin: "5px",
+                objectFit: "cover",
+                border: selectedImageIndex === index ? "2px solid #00f" : "none",
+              }}
+            />
           ))}
         </div>
       </div>
