@@ -19,7 +19,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true); // New loading state for authentication
   const [user, setUser] = useState(null);
-  const [overlayVisible, setOverlayVisible] = useState(false); // New state for overlay visibility
 
   // Authentication logic
   useEffect(() => {
@@ -62,11 +61,12 @@ function App() {
         return dateB.localeCompare(dateA); // Compare dates in descending order
       });
   
-      setImages(sortedImages.map((img) => img.url)); // Extract only URLs for rendering
+      setImages(sortedImages); // Set images with both URL and name
     };
   
     fetchImages();
   }, [authLoading, user]);
+  
 
   const handleFileUpload = async (event) => {
     if (authLoading) {
@@ -81,7 +81,6 @@ function App() {
 
     const files = Array.from(event.target.files);
     setLoading(true);
-    setOverlayVisible(true); // Show overlay and spinner
 
     try {
       // Process files and upload them to Firebase Storage
@@ -156,7 +155,6 @@ function App() {
 
       // After all files are uploaded and URLs are fetched, show overlay for 5 seconds, then refresh the page
       setTimeout(() => {
-        setOverlayVisible(false); // Hide overlay after 5 seconds
         setLoading(false);
         window.location.reload(); // Refresh the page
       }, 5000);
@@ -164,14 +162,12 @@ function App() {
     } catch (error) {
       console.error("Error during file upload:", error);
       setLoading(false);
-      setOverlayVisible(false); // Hide overlay if there is an error
     }
   };
 
   return (
     <div className="App">
       <header>
-        <h1>Freja's Univers</h1>
         <div className="btn-container">
           <label htmlFor="files" className="btn">
             🖼️
@@ -187,25 +183,36 @@ function App() {
         </div>
       </header>
       <main>
-        <div className="gallery">
-          {loading ? (
-            <div className="spinner"></div>
-          ) : images.length > 0 ? (
-            images.map((image, index) => (
-              <img key={index} src={image} alt={`Uploaded ${index}`} />
-            ))
-          ) : (
-            <p>No images uploaded yet!</p>
-          )}
-        </div>
+      <div className="gallery">
+  {loading ? (
+    <div className="spinner"></div>
+  ) : images.length > 0 ? (
+    images.map((image, index) => (
+      <img key={index} src={image.url} alt={`Uploaded ${index}`} />
+    ))
+  ) : (
+    <p>No images uploaded yet!</p>
+  )}
+</div>
+
       </main>
 
-      {/* Overlay and Spinner */}
-      {overlayVisible && (
-        <div className="overlay">
-          <div className="spinner"></div>
-        </div>
-      )}
+      <div className="timeline-container">
+  <div className="timeline-dates">
+    {images.length > 0 &&
+      images.map((image, index) => {
+        const date = image.name.split("_")[0]; // Extract the date (YYYYMMDD) from the filename
+
+        return (
+          <div key={index} className="timeline-date">
+          </div>
+        );
+      })}
+  </div>
+</div>
+
+
+
     </div>
   );
 }

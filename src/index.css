@@ -157,12 +157,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 .btn-container {
-  left: -16%!important;
   position: fixed;
-  top: 50%;
-  left: 20px; /* Adjust as needed for spacing from the left */
-  transform: translateY(-50%); /* Center it vertically */
-  z-index: 1000; /* Ensure it stays on top of other content */
+  transform: translate(70%, -40%);
+  z-index: 1000;
 }
 
 .btn {
@@ -196,4 +193,52 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .btn:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 111, 97, 0.5);
+}
+
+/* Timeline container, fixed to the bottom */
+.timeline-container {
+  position: fixed;
+  top: 99%;
+  transform: translate(15%, -50%);
+  max-width: 75%;
+  z-index: 1000;
+  display: flex;
+  justify-content: center; /* Center the dates container */
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7); /* Black/grey background with 0.7 opacity */
+  padding: 10px 0;
+  border-radius: 75px; /* Optional: to add rounded corners */
+  overflow-x: auto; /* Allows scrolling if there are too many images */
+}
+
+/* Inner container to group the dates */
+.timeline-dates {
+  display: flex;
+  justify-content: center; /* Ensure the dates stay in the center */
+  position: relative;
+}
+
+/* Date for each image */
+.timeline-date {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px; /* Adjust width for spacing */
+  height: 100px; /* Adjust height */
+  margin: 0 10px;
+  position: relative;
+  text-align: center;
+  font-size: 12px;
+  color: #fff;
+  writing-mode: vertical-rl; /* Make text vertical */
+  transform: rotate(180deg); /* Rotate text to make it readable from bottom to top */
+}
+
+.timeline-label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 12px;
+  text-align: center;
+  width: 100%;
+  color: #fff; /* Label text color */
 }
